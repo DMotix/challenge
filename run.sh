@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DOCKER_UID=$(id -u)
-DOCKER_GID=$(id -g)
+DOCKER_UID=1000
+DOCKER_GID=1000
 
 
 echo "****************************************"

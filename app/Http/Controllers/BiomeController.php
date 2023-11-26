@@ -6,14 +6,12 @@ use App\Models\Organism;
 use App\Models\Sample;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Example of controller for the Challenge
  */
 class BiomeController extends Controller
 {
-
 
     /**
      * Returns a list of samples
@@ -22,6 +20,7 @@ class BiomeController extends Controller
 
         return Sample::query()
             ->withCount('abundances')
+            ->with('crop')
             ->get();
     }
 
@@ -29,22 +28,28 @@ class BiomeController extends Controller
      * Creates a new organism
      */
     public function newOrganism(Request $request){
-
-        // Log is configured to print to stderr
-        Log::info($request->all());
-
-        //
-        // TODO: Complete this method to create a new Organism instance
-        //
-
-        return response()->json(['error' => 'Not completed'], 400);
+        
+        if(isset($request['genus']) && strlen($request['genus']) > 0 && isset($request['species']) && strlen($request['species']) > 0){
+            try {
+                $organism = new Organism();
+                $organism->genus = $request['genus'];
+                $organism->species = $request['species'];
+                $organism->save();
+                return response()->json(['Succes' => 'Completed'], 200);
+            } catch (\Throwable $th) {
+                Log::error($th);
+                return response()->json(['error' => 'Not completed'], 400);
+            }
+            
+        }
     }
 
     /**
      * Returns a paginated list of organisms 
      */
     public function listOrganisms(){
-        return Organism::paginate(10);
+        $org = Organism::paginate(10);
+        return $org;
     }
 
     /**
@@ -52,14 +57,13 @@ class BiomeController extends Controller
      */
     public function listOrganismsTop10(){
 
-        //
-        // TODO: Return the top 10 organisms
-        //
-        // Could be done with plain sql or better using laravel models
+        $organism = Organism::withCount('abundances')
+            ->with('abundances.sample.crop')
+            ->orderByDesc('abundances_count')
+            ->limit(10)
+            ->get();
 
-        return DB::select("
-            select * from organisms
-        ");
+        return $organism;
         
     }
 

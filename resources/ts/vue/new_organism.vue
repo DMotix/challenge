@@ -7,12 +7,14 @@
         <form class="pure-form pure-form-stacked" @submit.prevent="">
             <fieldset class="pure-group">
                 <input
+                    required
                     type="text"
                     v-model="genus"
                     placeholder="Genus"
                     class="pure-input-1"
                 >
                 <input
+                    required
                     type="text"
                     v-model="species"
                     placeholder="Species"
@@ -57,6 +59,12 @@ export default class NewOrganismVue extends Vue {
 
     async onClick(){
 
+        
+        if (this.genus === '' || this.genus === ' ' || this.species === '' || this.species === ' ') {
+            this.msg = 'Please fill both Genus and Species fields';
+            return;
+        }
+
         const data = {
             genus: this.genus,
             species: this.species,
@@ -67,6 +75,8 @@ export default class NewOrganismVue extends Vue {
         try {
             const response = await axios.post('/api/organisms/', data);
             this.msg = 'Success';
+            this.genus = '';
+            this.species = '';
         } catch (e){
             if (axios.isAxiosError(e) && e.response) {
                 this.msg = e.response.data.error;
